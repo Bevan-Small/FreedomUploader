@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Freedom Uploader</string>
+
+    <string name="no_tag">No tag</string>
+
+    <string-array name="tag_array">
+        <item>@string/no_tag</item>item>
+        <item>Walking</item>
+        <item>Bicycle Trail</item>
+        <item>Swimming</item>
+        <item>Watersports</item>
+        <item>Sightseeing</item>
+        <item>Cultural</item>
+        <item>Day Out</item>
+        <item>Multiday</item>
+
+    </string-array>
+
+
+
+</resources>
