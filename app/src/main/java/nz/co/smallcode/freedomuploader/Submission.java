@@ -17,15 +17,16 @@ public class Submission {
     public String tag3;
     public double longitude;
     public double latitude;
+    public String localPhotoUri;
 
 
     public Submission() {
         // default constructor required for uploading to Firebase
     }
 
-    public Submission(String countryCode, long index, String title, String description,
-                      String address, long rating, String tag1, String tag2, String tag3,
-                      double longitude, double latitude) {
+    public void setDatabaseData(String countryCode, long index, String title, String description,
+                                String address, long rating, String tag1, String tag2, String tag3,
+                                double longitude, double latitude){
         this.countryCode = countryCode;
         this.index = index;
         this.title = title;
@@ -37,7 +38,10 @@ public class Submission {
         this.tag3 = tag3;
         this.longitude = longitude;
         this.latitude = latitude;
+    }
 
+    public void setLocalPhotoUri(String localPhotoUri){
+        this.localPhotoUri = localPhotoUri;
     }
 
 }

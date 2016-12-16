@@ -131,6 +131,19 @@
             android:spinnerMode="dropdown"/>
 
         <Button
+            android:text="ADD A PHOTO"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/buttonAddPhoto"
+            android:onClick="selectAnImage"
+            />
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/imageViewPhoto"/>
+
+        <Button
             android:id="@+id/buttonSubmit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
