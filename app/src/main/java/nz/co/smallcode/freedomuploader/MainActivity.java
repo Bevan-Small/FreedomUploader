@@ -15,7 +15,6 @@ import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -39,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int PHOTO_MAX_DIMENSION = 960;
 
     Submission mSubmission = new Submission();
+    Bitmap mPhotoBitmap;
+    int mBitmapWindowOffset;
 
     ImageView mPhotoImageView;
 
@@ -287,16 +288,15 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     // Reading the image
                     inputStream = getContentResolver().openInputStream(imageUri);
-
-
                     Bitmap imageBitmap = BitmapFactory.decodeStream(inputStream);
-                    Log.e(BRS_LOG_TAG, "Initial Bitmap width: "+imageBitmap.getWidth()+ ", height: " + imageBitmap.getHeight());
-                    // Setting the submission object's photo as the picked image
-                    mSubmission.setPhoto(scaleBitmap(imageBitmap));
-                    Log.e(BRS_LOG_TAG, "Scaled Bitmap width: "+mSubmission.getPhoto().getWidth()+ ", height: " + mSubmission.getPhoto().getHeight());
 
-                    // Setting the found picture to the imageview
-                    mPhotoImageView.setImageBitmap(imageBitmap);
+                    // Scaling bitmap down if required
+                    mPhotoBitmap = scaleBitmap(imageBitmap);
+
+                    // Zeroing offset and setting image
+                    mBitmapWindowOffset =0;
+                    setCroppedBitmap();
+
                     inputStream.close();
 
                 } catch (FileNotFoundException e) {
@@ -315,6 +315,7 @@ public class MainActivity extends AppCompatActivity {
      * @return
      */
     public static Bitmap scaleBitmap(Bitmap bitmap){
+        // TODO prevent from scaling up
         double scaleFactor;
         double bitmapHeight = bitmap.getHeight();
         double bitmapWidth = bitmap.getWidth();
@@ -326,7 +327,68 @@ public class MainActivity extends AppCompatActivity {
             scaleFactor = bitmapWidth/(double)PHOTO_MAX_DIMENSION;
         }
 
-         return Bitmap.createScaledBitmap(bitmap, (int)(bitmapWidth/scaleFactor), (int)(bitmapHeight/scaleFactor), false);
+        if (scaleFactor>1) {
+            return Bitmap.createScaledBitmap(bitmap, (int) (bitmapWidth / scaleFactor), (int) (bitmapHeight / scaleFactor), false);
+        }
+
+        else {return bitmap;}
+    }
+
+
+    /**
+     * pushes image window along by offset and set to mSubmission and ImageView
+     */
+    public void setCroppedBitmap(){
+        int startX;
+        int startY;
+        int width = mPhotoBitmap.getWidth();
+        int height = mPhotoBitmap.getHeight();
+        int dimension;
+
+        // Establishing if photo is portrait or landscape
+        if (width>height){
+            startY = 0;
+            startX = mBitmapWindowOffset;
+            dimension = height;
+        } else {
+            startY = mBitmapWindowOffset;
+            startX = 0;
+            dimension = width;
+        }
+
+        // Setting cropped image in submission object and on screen
+        mSubmission.setPhoto(Bitmap.createBitmap(mPhotoBitmap, startX, startY, dimension, dimension, null, false));
+        mPhotoImageView.setImageBitmap(mSubmission.getPhoto());
+    }
+
+    /**
+     * Increment offset and set photo if legal
+     * @param view
+     */
+    public void incrementOffset(View view){
+        int width = mPhotoBitmap.getWidth();
+        int height = mPhotoBitmap.getHeight();
+
+        // If increment doesn't push the image window beyond bounds, then increment offset of crop
+        // and set image
+        int difference = Math.abs(width-height);
+        if (mBitmapWindowOffset +10 < difference){
+            mBitmapWindowOffset+=10;
+            setCroppedBitmap();
+        }
+    }
+
+    /**
+     * Decrement offset and set photo if legal
+     * @param view
+     */
+    public void decrementOffset(View view){
+        // If increment doesn't push the image window beyond bounds, then increment offset of crop
+        // and set image
+        if (mBitmapWindowOffset -10 >= 0){
+            mBitmapWindowOffset-=10;
+            setCroppedBitmap();
+        }
     }
 
 }
