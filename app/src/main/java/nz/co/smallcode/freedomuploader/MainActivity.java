@@ -15,6 +15,7 @@ import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity {
@@ -34,14 +36,18 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 100;
     private static final int IMAGE_GALLERY_REQUEST = 100;
     private static final double ZOOM_LEVEL = 11.0;
+    private static final int PHOTO_MAX_DIMENSION = 960;
 
     Submission mSubmission = new Submission();
+
+    ImageView mPhotoImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mPhotoImageView = (ImageView)findViewById(R.id.imageViewPhoto);
 
     }
 
@@ -251,12 +257,6 @@ public class MainActivity extends AppCompatActivity {
         return index;
     }
 
-
-    /*
-     * Allows users to pull an image up from the SD card. It will present the image and
-     * save the image uri in the Submission object
-     */
-
     /**
      * Allows users to pull an image up from the SD card. The image is received in onActivityResult()
      *
@@ -287,17 +287,21 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     // Reading the image
                     inputStream = getContentResolver().openInputStream(imageUri);
-                    Bitmap imageBitmap = BitmapFactory.decodeStream(inputStream);
 
+
+                    Bitmap imageBitmap = BitmapFactory.decodeStream(inputStream);
+                    Log.e(BRS_LOG_TAG, "Initial Bitmap width: "+imageBitmap.getWidth()+ ", height: " + imageBitmap.getHeight());
                     // Setting the submission object's photo as the picked image
-                    mSubmission.setPhoto(imageBitmap);
+                    mSubmission.setPhoto(scaleBitmap(imageBitmap));
+                    Log.e(BRS_LOG_TAG, "Scaled Bitmap width: "+mSubmission.getPhoto().getWidth()+ ", height: " + mSubmission.getPhoto().getHeight());
 
                     // Setting the found picture to the imageview
-                    ImageView photoView = (ImageView) findViewById(R.id.imageViewPhoto);
-                    photoView.setImageBitmap(imageBitmap);
-
+                    mPhotoImageView.setImageBitmap(imageBitmap);
+                    inputStream.close();
 
                 } catch (FileNotFoundException e) {
+                    Toast.makeText(this, "Unable to open image", Toast.LENGTH_LONG).show();
+                } catch (IOException e){
                     Toast.makeText(this, "Unable to open image", Toast.LENGTH_LONG).show();
                 }
 
@@ -305,5 +309,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Scales bitmap down so greatest dimension is PHOTO_MAX_DIMENSION
+     * @param bitmap
+     * @return
+     */
+    public static Bitmap scaleBitmap(Bitmap bitmap){
+        double scaleFactor;
+        double bitmapHeight = bitmap.getHeight();
+        double bitmapWidth = bitmap.getWidth();
+
+
+        if (bitmap.getHeight() > bitmap.getWidth()){
+            scaleFactor = bitmapHeight/(double)PHOTO_MAX_DIMENSION;
+        } else {
+            scaleFactor = bitmapWidth/(double)PHOTO_MAX_DIMENSION;
+        }
+
+         return Bitmap.createScaledBitmap(bitmap, (int)(bitmapWidth/scaleFactor), (int)(bitmapHeight/scaleFactor), false);
+    }
 
 }
