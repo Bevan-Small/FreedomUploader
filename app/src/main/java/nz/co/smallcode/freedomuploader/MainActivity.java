@@ -1,20 +1,20 @@
 package nz.co.smallcode.freedomuploader;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
-import android.location.LocationManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,12 +23,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener{
 
     private static final String BRS_LOG_TAG = "BRS Test";
     private static final String NO_ASSIGNED_COORDINATE = "200";
@@ -37,34 +41,87 @@ public class MainActivity extends AppCompatActivity {
     private static final double ZOOM_LEVEL = 11.0;
     private static final int PHOTO_MAX_DIMENSION = 960;
 
+    private GoogleApiClient mGoogleApiClient;
+
     Submission mSubmission = new Submission();
+    Location mLastLocation;
     Bitmap mPhotoBitmap;
     int mBitmapWindowOffset;
 
-    ImageView mPhotoImageView;
+    ImageView mImageViewPhoto;
+    EditText mEditTextLatitude;
+    EditText mEditTextLongitude;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mPhotoImageView = (ImageView)findViewById(R.id.imageViewPhoto);
+        mImageViewPhoto = (ImageView)findViewById(R.id.imageViewPhoto);
+        mEditTextLatitude = (EditText)findViewById(R.id.editTextLatitude);
+        mEditTextLongitude = (EditText)findViewById(R.id.editTextLongitude);
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
+    }
+
+    /////////////////////////////////// Activity Lifecycle /////////////////////////////////////////
+
+    protected void onStart() {
+        mGoogleApiClient.connect();
+        super.onStart();
+    }
+
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    /////////////////////////////////// Location Handling //////////////////////////////////////////
+
+    @Override
+    public void onConnectionFailed(ConnectionResult result){
+        // TODO handle connection failures once work on finding location is done
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+
+        if (checkAndRequestLocation()) {
+            try{
+            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);}
+            catch (SecurityException e){
+                Log.e(BRS_LOG_TAG,"Somehow permissions are both granted and not granted");}
+        }
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
 
     }
 
 
+
     /**
-     * Gets the phones location and sets the longitude and latitude views to match
-     * @param view
+     * Checks for fine location permission. Requests permission if not granted
+     * @return true if permission granted or API 22 or below
      */
-    public void setLocationAsCurrent(View view) {
+    private boolean checkAndRequestLocation(){
 
-        Context context = this;
-        LocationManager locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
-
-        // TODO make compatible with devices running API 22 and below
-        //Check that the permission to access fine location has been granted. If not, asks for permission
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION)
+       // Permission is granted automatically if sdk version is less than 23
+        if (Build.VERSION.SDK_INT < 23){
+            return true;
+        }
+        // Check that the permission to access fine location has been granted. If not, asks for permission
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
 
             ActivityCompat.requestPermissions(this,
@@ -73,30 +130,42 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+        // Returns true if permission granted
+        return (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED);
+    }
 
-        // If permission granted, fetch location
-        if (ContextCompat.checkSelfPermission(context, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            // TODO change PASSIVE_PROVIDER to something that forces an update on GPS/network coords
-            Location location = locationManager.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER);
-            long deviceTime = SystemClock.elapsedRealtimeNanos();
-            long timestamp = location.getElapsedRealtimeNanos();
+    /**
+     * Gets the phones location and sets the longitude and latitude views to match
+     * @param view
+     */
+    public void setLocationAsCurrent(View view) {
 
-            if ((deviceTime - timestamp) < 60000000000L) {
-                // Set long and lat views as device location
-                EditText latitiude = (EditText) findViewById(R.id.editTextLatitude);
-                latitiude.setText(Double.toString(location.getLatitude()));
+        if (mLastLocation != null){
 
-                EditText longitude = (EditText) findViewById(R.id.editTextLongitude);
-                longitude.setText(Double.toString(location.getLongitude()));
+            // Display last location on screen
+            mEditTextLatitude.setText(Double.toString(mLastLocation.getLatitude()));
+            mEditTextLongitude.setText(Double.toString(mLastLocation.getLongitude()));
 
+            // Check time elapsed since fix and display
+            long timeFromBootToLocationFix = mLastLocation.getElapsedRealtimeNanos();
+            long timeFromBoot = SystemClock.elapsedRealtimeNanos();
+            long minimumFixAge = timeFromBoot - timeFromBootToLocationFix;
 
-            } else {
-                Toast.makeText(this, "Please update your location", Toast.LENGTH_LONG).show();
-            }
+            long maxTimeInMinutes = minimumFixAge / (long)(6 * Math.pow(10,10)) +1;
+
+            TextView locationAgeTextView = (TextView)findViewById(R.id.textViewLocationAge);
+            locationAgeTextView.setText("Location is at least " + Long.toString(maxTimeInMinutes)
+                    + " minutes old");
 
         }
+        else {
+            Toast.makeText(this, "No location found", Toast.LENGTH_LONG).show();
+        }
     }
+
+
+    /////////////////////////////////// Submission Handling ////////////////////////////////////////
 
     /**
      * Checks that all pertinent data has been entered and makes a submission to the firebase
@@ -258,9 +327,11 @@ public class MainActivity extends AppCompatActivity {
         return index;
     }
 
+
+    /////////////////////////////////// Image Handling /////////////////////////////////////////////
+
     /**
      * Allows users to pull an image up from the SD card. The image is received in onActivityResult()
-     *
      * @param view
      */
     public void selectAnImage(View view) {
@@ -285,6 +356,7 @@ public class MainActivity extends AppCompatActivity {
                 Uri imageUri = data.getData();
                 InputStream inputStream;
 
+                // TODO deal with photos that are too small
                 try {
                     // Reading the image
                     inputStream = getContentResolver().openInputStream(imageUri);
@@ -358,7 +430,7 @@ public class MainActivity extends AppCompatActivity {
 
         // Setting cropped image in submission object and on screen
         mSubmission.setPhoto(Bitmap.createBitmap(mPhotoBitmap, startX, startY, dimension, dimension, null, false));
-        mPhotoImageView.setImageBitmap(mSubmission.getPhoto());
+        mImageViewPhoto.setImageBitmap(mSubmission.getPhoto());
     }
 
     /**
@@ -390,5 +462,6 @@ public class MainActivity extends AppCompatActivity {
             setCroppedBitmap();
         }
     }
+
 
 }

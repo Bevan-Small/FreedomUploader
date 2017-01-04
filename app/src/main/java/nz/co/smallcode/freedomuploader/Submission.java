@@ -24,6 +24,7 @@ public class Submission {
     private double latitude;
 
 
+
     public Submission() {
         // default constructor required for uploading to Firebase
     }
@@ -125,7 +126,13 @@ public class Submission {
         return coordinateStringBuilder.toString();
     }
 
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
 
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
 
     public void setAddress(String address) {
         this.address = address;
