@@ -104,12 +104,12 @@ public class Submission {
         } else {
             // Treats positive numbers
             if (coordinateStringBuilder.substring(1, 2).equals(".")) {
-                coordinateStringBuilder.insert(0, "000");
+                coordinateStringBuilder.insert(0, "+00");
             } else if (coordinateStringBuilder.substring(2, 3).equals(".")) {
-                coordinateStringBuilder.insert(0, "00");
+                coordinateStringBuilder.insert(0, "+0");
 
             } else if (coordinateStringBuilder.substring(3, 4).equals(".")){
-                coordinateStringBuilder.insert(0, "0");
+                coordinateStringBuilder.insert(0, "+");
             }
         }
 

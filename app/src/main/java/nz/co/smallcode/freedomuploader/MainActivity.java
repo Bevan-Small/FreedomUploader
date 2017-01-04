@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private static final String NO_ASSIGNED_COORDINATE = "200";
     private static final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 100;
     private static final int IMAGE_GALLERY_REQUEST = 100;
+    private static final int MAPS_LOCATION_REQUEST = 200;
     private static final double ZOOM_LEVEL = 11.0;
     private static final int PHOTO_MAX_DIMENSION = 960;
 
@@ -162,6 +163,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         else {
             Toast.makeText(this, "No location found", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void findLocationOnMap(View view){
+        // TODO launch map activity and get back location
+        Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
+
+        startActivityForResult(intent, MAPS_LOCATION_REQUEST);
     }
 
 
@@ -350,7 +358,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == RESULT_OK) {
+        if (resultCode == RESULT_OK && data != null) {
             if (requestCode == IMAGE_GALLERY_REQUEST) {
                 // Working with image gallery return
                 Uri imageUri = data.getData();
@@ -376,6 +384,13 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 } catch (IOException e){
                     Toast.makeText(this, "Unable to open image", Toast.LENGTH_LONG).show();
                 }
+
+            }
+            else if (requestCode == MAPS_LOCATION_REQUEST){
+                // Set returned data to editText fields
+                Bundle extras = data.getExtras();
+                mEditTextLatitude.setText(extras.getString(MapsActivity.EXTRA_LATITUDE));
+                mEditTextLongitude.setText(extras.getString(MapsActivity.EXTRA_LONGITUDE));
 
             }
         }

@@ -1,0 +1,51 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+
+    <fragment xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="nz.co.smallcode.freedomuploader.MapsActivity" />
+
+
+
+
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true">
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+            <Button
+                android:id="@+id/buttonMapsUsePinnedLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="USE PINNED LOCATION"
+                android:onClick="usePinnedLocation"
+                android:layout_above="@+id/buttonMapsUseMyLocation"/>
+
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+            <Button
+                android:id="@+id/buttonMapsUseMyLocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="USE MY LOCATION"
+                android:onClick="useMyLocation"
+                />
+
+        </TableRow>
+    </TableLayout>
+
+</RelativeLayout>

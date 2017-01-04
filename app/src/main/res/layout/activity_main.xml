@@ -67,6 +67,13 @@
             android:text="Location" />
 
         <Button
+            android:id="@+id/buttonFindLocationOnMap"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="findLocationOnMap"
+            android:text="FIND LOCATION ON MAP" />
+
+        <Button
             android:id="@+id/buttonCurrentLocation"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
