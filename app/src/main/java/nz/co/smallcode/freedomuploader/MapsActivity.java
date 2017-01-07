@@ -37,16 +37,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private static final int UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
     private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
             UPDATE_INTERVAL_IN_MILLISECONDS / 2;
+    private static float ZOOM_COUNTRY_LEVEL = 5.0f;
+    private static float ZOOM_USER_LOCATION_LEVEL = 14.0f;
+    private static double DEFAULT__MARKER_LATITUDE = -40.9650412;
+    private static double DEFAULT_MARKER_LONGITUDE = 173.337909;
+
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
     private LatLng mPoint;
     private Location mCurrentLocation;
     private LocationRequest mLocationRequest;
+    private boolean intialDeviceLocation = true;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Retrieve location and camera position from saved instance state.
+        if (savedInstanceState != null) {
+            // TODO retrieve state data
+            // mCurrentLocation = savedInstanceState.getParcelable(KEY_LOCATION);
+            // mCameraPosition = savedInstanceState.getParcelable(KEY_CAMERA_POSITION);
+        }
+
         setContentView(R.layout.activity_maps);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -71,6 +86,44 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         super.onStop();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // Remove location updates
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(
+                    mGoogleApiClient, this);
+        }
+    }
+
+    /**
+     * Saves the state of the map when the activity is paused.
+     */
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        if (mMap != null) {
+            // TODO save state info (location, point, initialDeviceLocation, camera position
+            //outState.putParcelable(KEY_CAMERA_POSITION, mMap.getCameraPosition());
+            //outState.putParcelable(KEY_LOCATION, mCurrentLocation);
+            super.onSaveInstanceState(outState);
+        }
+    }
+
+    /**
+     * Get the device location when the activity is restored after a pause.
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        // Get location and resume updating
+        if (mGoogleApiClient.isConnected()) {
+            getDeviceLocation();
+        }
+    }
+
+
     /////////////////////////////////// Map Handling ///////////////////////////////////////////////
 
     /**
@@ -91,10 +144,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
 
-        // Add a marker in NZ and move the camera
-        mPoint = new LatLng(-40.9198965, 172.9632746);
+        // Add a marker in NZ and move the camera to a default location
+        mPoint = new LatLng(DEFAULT__MARKER_LATITUDE, DEFAULT_MARKER_LONGITUDE);
         mMap.addMarker(new MarkerOptions().position(mPoint).title("New Activity Location"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(mPoint));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mPoint, ZOOM_COUNTRY_LEVEL));
+
 
         // Set listener for new marker placement
         mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
@@ -109,7 +163,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .position(mPoint)
                         .title("You are here")
                         .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-                Log.e(BRS_LOG_TAG,"Point added");
+                Log.e(BRS_LOG_TAG, "Point added");
             }
         });
 
@@ -149,9 +203,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
      * Builds the api client and creates the location request
      * Api client is automanaged
      */
-    private synchronized  void buildGoogleApiClient() {
+    private synchronized void buildGoogleApiClient() {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this/* FragmentActivity */,this /* OnConnectionFailedListener */)
+                .enableAutoManage(this/* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addConnectionCallbacks(this)
                 .addApi(LocationServices.API)
                 .build();
@@ -161,6 +215,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     /**
      * Client callback for failed connection to google play services
+     *
      * @param result contains info on connection failure
      */
     @Override
@@ -173,6 +228,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     /**
      * Client callback for successful connection to google play services
      * gets device location
+     *
      * @param connectionHint contains info on connection
      */
     @Override
@@ -182,6 +238,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     /**
      * Client callback for suspension of google play services
+     *
      * @param i cause of failure
      */
     @Override
@@ -191,18 +248,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     /**
      * Callback for change of location
+     *
      * @param location new location
      */
     @Override
     public void onLocationChanged(Location location) {
         mCurrentLocation = location;
+
+        if (intialDeviceLocation) {
+            intialDeviceLocation = false;
+
+            // Move camera to user device location
+            LatLng userDeviceLocation = new LatLng(mCurrentLocation.getLatitude(), mCurrentLocation.getLongitude());
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(userDeviceLocation, ZOOM_USER_LOCATION_LEVEL));
+
+            // If no new marker has been placed, then remove default marker and place just above user location
+            if (mPoint.latitude == DEFAULT__MARKER_LATITUDE && mPoint.longitude == DEFAULT_MARKER_LONGITUDE){
+                mMap.clear();
+                mPoint = new LatLng(userDeviceLocation.latitude + 0.01, userDeviceLocation.longitude);
+                mMap.addMarker(new MarkerOptions().position(mPoint).title("New Activity Location"));
+            }
+
+
+        }
     }
+
 
     /**
      * Sets mLocationRequest to a new location request.
      * Sets update intervals and priority of request
      */
-    private void createLocationRequest(){
+    private void createLocationRequest() {
         mLocationRequest = new LocationRequest();
 
         // Sets desired update interval (interval will not be exact)
@@ -221,7 +297,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @SuppressWarnings({"MissingPermission"})
     private void getDeviceLocation() {
 
-        if (checkLocationPermission()){
+        if (checkLocationPermission()) {
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient,
                     mLocationRequest, this);
