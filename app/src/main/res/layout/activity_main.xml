@@ -73,13 +73,6 @@
             android:onClick="findLocationOnMap"
             android:text="FIND LOCATION ON MAP" />
 
-        <Button
-            android:id="@+id/buttonCurrentLocation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:onClick="setLocationAsCurrent"
-            android:text="USE MY CURRENT LOCATION" />
-
         <EditText
             android:id="@+id/editTextAddress"
             android:layout_width="wrap_content"

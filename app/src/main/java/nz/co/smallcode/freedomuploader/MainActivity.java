@@ -1,20 +1,12 @@
 package nz.co.smallcode.freedomuploader;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.location.Location;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -23,29 +15,21 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks,GoogleApiClient.OnConnectionFailedListener{
+public class MainActivity extends AppCompatActivity  {
 
     private static final String BRS_LOG_TAG = "BRS Test";
     private static final String NO_ASSIGNED_COORDINATE = "200";
-    private static final int MY_PERMISSIONS_ACCESS_FINE_LOCATION = 100;
     private static final int IMAGE_GALLERY_REQUEST = 100;
     private static final int MAPS_LOCATION_REQUEST = 200;
     private static final double ZOOM_LEVEL = 11.0;
     private static final int PHOTO_MAX_DIMENSION = 960;
 
-    private GoogleApiClient mGoogleApiClient;
-
     Submission mSubmission = new Submission();
-    Location mLastLocation;
     Bitmap mPhotoBitmap;
     int mBitmapWindowOffset;
 
@@ -62,113 +46,20 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         mEditTextLatitude = (EditText)findViewById(R.id.editTextLatitude);
         mEditTextLongitude = (EditText)findViewById(R.id.editTextLongitude);
 
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(this)
-                    .addConnectionCallbacks(this)
-                    .addOnConnectionFailedListener(this)
-                    .addApi(LocationServices.API)
-                    .build();
-        }
-
     }
 
-    /////////////////////////////////// Activity Lifecycle /////////////////////////////////////////
 
-    protected void onStart() {
-        mGoogleApiClient.connect();
-        super.onStart();
-    }
-
-    protected void onStop() {
-        mGoogleApiClient.disconnect();
-        super.onStop();
-    }
 
     /////////////////////////////////// Location Handling //////////////////////////////////////////
 
-    @Override
-    public void onConnectionFailed(ConnectionResult result){
-        // TODO handle connection failures once work on finding location is done
-    }
-
-    @Override
-    public void onConnected(Bundle connectionHint) {
-
-        if (checkAndRequestLocation()) {
-            try{
-            mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                    mGoogleApiClient);}
-            catch (SecurityException e){
-                Log.e(BRS_LOG_TAG,"Somehow permissions are both granted and not granted");}
-        }
-
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-
-    }
-
-
-
     /**
-     * Checks for fine location permission. Requests permission if not granted
-     * @return true if permission granted or API 22 or below
+     * Starts Google Maps activity when FIND LOCATION ON MAP button is pressed
+     * Returns latitude and longitude strings with result code MAPS_LOCATION_REQUEST
+     * @param view Find location on map button
      */
-    private boolean checkAndRequestLocation(){
-
-       // Permission is granted automatically if sdk version is less than 23
-        if (Build.VERSION.SDK_INT < 23){
-            return true;
-        }
-        // Check that the permission to access fine location has been granted. If not, asks for permission
-        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    MY_PERMISSIONS_ACCESS_FINE_LOCATION);
-
-        }
-
-        // Returns true if permission granted
-        return (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED);
-    }
-
-    /**
-     * Gets the phones location and sets the longitude and latitude views to match
-     * @param view
-     */
-    public void setLocationAsCurrent(View view) {
-
-        if (mLastLocation != null){
-
-            // Display last location on screen
-            mEditTextLatitude.setText(Double.toString(mLastLocation.getLatitude()));
-            mEditTextLongitude.setText(Double.toString(mLastLocation.getLongitude()));
-
-            // Check time elapsed since fix and display
-            long timeFromBootToLocationFix = mLastLocation.getElapsedRealtimeNanos();
-            long timeFromBoot = SystemClock.elapsedRealtimeNanos();
-            long minimumFixAge = timeFromBoot - timeFromBootToLocationFix;
-
-            long maxTimeInMinutes = minimumFixAge / (long)(6 * Math.pow(10,10)) +1;
-
-            TextView locationAgeTextView = (TextView)findViewById(R.id.textViewLocationAge);
-            locationAgeTextView.setText("Location is at least " + Long.toString(maxTimeInMinutes)
-                    + " minutes old");
-
-        }
-        else {
-            Toast.makeText(this, "No location found", Toast.LENGTH_LONG).show();
-        }
-    }
-
     public void findLocationOnMap(View view){
         // TODO launch map activity and get back location
         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
-
         startActivityForResult(intent, MAPS_LOCATION_REQUEST);
     }
 
