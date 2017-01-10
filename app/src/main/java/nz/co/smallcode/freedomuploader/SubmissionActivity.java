@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 
 import java.io.IOException;
@@ -13,7 +14,9 @@ import java.io.IOException;
 public class SubmissionActivity extends AppCompatActivity {
 
     private Submission mSubmission;
+    private TextView mTitleView;
     private ImageView mPhotoView;
+    private RatingBar mRatingBar;
     private TextView mDescriptionView;
     private TextView mAddressView;
     private TextView mCoordinateView;
@@ -40,7 +43,9 @@ public class SubmissionActivity extends AppCompatActivity {
      * Provides data from mSubmission to views
      */
     private void displayData() {
+        mTitleView.setText(mSubmission.getTitle());
         mPhotoView.setImageBitmap(mSubmission.getPhoto());
+        mRatingBar.setRating(mSubmission.getRating());
         mDescriptionView.setText(mSubmission.getDescription());
         mAddressView.setText(mSubmission.getAddress());
         mCoordinateView.setText(String.valueOf(mSubmission.getLatitude()
@@ -55,7 +60,9 @@ public class SubmissionActivity extends AppCompatActivity {
      * Assign views to associated member variables
      */
     private void findViews() {
+        mTitleView = (TextView)findViewById(R.id.textViewSubmissionTitle);
         mPhotoView = (ImageView) findViewById(R.id.imageViewSubmissionPhoto);
+        mRatingBar = (RatingBar) findViewById(R.id.ratingBarSubmission);
         mDescriptionView = (TextView) findViewById(R.id.textViewSubmissionDescription);
         mAddressView = (TextView) findViewById(R.id.textViewSubmissionAddress);
         mCoordinateView = (TextView) findViewById(R.id.textViewSubmissionCoordinates);
@@ -69,13 +76,12 @@ public class SubmissionActivity extends AppCompatActivity {
      */
     private void setSubmissionData(Intent extras) {
 
-
         mSubmission.setDatabaseData(extras.getStringExtra("countryCode"),
                 extras.getLongExtra("index", 0L),
                 extras.getStringExtra("title"),
                 extras.getStringExtra("description"),
                 extras.getStringExtra("address"),
-                extras.getLongExtra("rating", 0L),
+                extras.getFloatExtra("rating", 0.0f),
                 extras.getStringExtra("tag1"),
                 extras.getStringExtra("tag2"),
                 extras.getStringExtra("tag3"),

@@ -11,7 +11,7 @@
         tools:context="nz.co.smallcode.freedomuploader.SubmissionActivity">
 
         <TextView
-            android:id="@+id/textView_submission_title"
+            android:id="@+id/textViewSubmissionTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/myCardTitleColor"
@@ -30,6 +30,13 @@
             android:scaleType="fitCenter"
             android:adjustViewBounds="true"
            />
+
+        <RatingBar
+            android:id="@+id/ratingBarSubmission"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="3"
+            android:stepSize="1" />
 
         <TextView
             android:id="@+id/textViewSubmissionDescription"

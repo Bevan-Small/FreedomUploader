@@ -127,7 +127,6 @@ public class MainActivity extends AppCompatActivity  {
     }
 
 
-
     /**
      *  Writes text field data to mSubmission variable
      */
@@ -140,7 +139,7 @@ public class MainActivity extends AppCompatActivity  {
         String description = descriptionView.getText().toString();
 
         RatingBar ratingBar = (RatingBar) findViewById(R.id.ratingBar);
-        int stars = ratingBar.getNumStars();
+        float stars = ratingBar.getRating();
 
         EditText addressView = (EditText) findViewById(R.id.editTextAddress);
         String address = addressView.getText().toString();

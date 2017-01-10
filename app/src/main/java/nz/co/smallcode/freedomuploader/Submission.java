@@ -16,7 +16,7 @@ public class Submission {
     private String title;
     private String description;
     private String address;
-    private long rating;
+    private float rating;
     private String tag1;
     private String tag2;
     private String tag3;
@@ -45,7 +45,7 @@ public class Submission {
      * @param latitude double
      */
     public void setDatabaseData(String countryCode, long index, String title, String description,
-                                String address, long rating, String tag1, String tag2, String tag3,
+                                String address, float rating, String tag1, String tag2, String tag3,
                                 double longitude, double latitude){
         this.countryCode = countryCode;
         this.index = index;
@@ -171,7 +171,7 @@ public class Submission {
         return address;
     }
 
-    public long getRating() {
+    public float getRating() {
         return rating;
     }
 
