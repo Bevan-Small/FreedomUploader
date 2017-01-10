@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -61,7 +62,6 @@ public class MainActivity extends AppCompatActivity  {
      * @param view Find location on map button
      */
     public void findLocationOnMap(View view){
-        // TODO launch map activity and get back location
         Intent intent = new Intent(getApplicationContext(), MapsActivity.class);
         startActivityForResult(intent, MAPS_LOCATION_REQUEST);
     }
@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity  {
     /**
      * Checks that all pertinent data has been entered and makes a submission to the firebase
      * database if data looks good
-     * @param view
+     * @param view SUBMIT Button
      */
     public void reviewData(View view) {
 
@@ -187,7 +187,6 @@ public class MainActivity extends AppCompatActivity  {
      * @return true if data is good
      */
     public boolean checkData(){
-        // TODO abstract this away to Submission class?
 
         boolean dataGood = true;
         boolean fieldsFilled = true;
@@ -234,12 +233,12 @@ public class MainActivity extends AppCompatActivity  {
     /**
      * Calculates the index of the box that the new submission falls into on the web mercator
      * projection
-     * @param latitude
-     * @param longitude
-     * @return
+     * @param latitude of activity
+     * @param longitude of activity
+     * @return index of box
      */
     public long indexCalculator(double latitude, double longitude) {
-        // TODO verify this works 16 Dec 2016
+        // TODO verify this works before submitting activities to database
         long boxesPerRow = 1024;
         double maxIJ = 256.0 * Math.pow(2.0, ZOOM_LEVEL);
 
@@ -256,9 +255,7 @@ public class MainActivity extends AppCompatActivity  {
         long j = (long) (y * boxesPerRow / maxIJ);
 
         // Calculate the index of the box
-        long index = i + j * boxesPerRow;
-
-        return index;
+        return (i + j * boxesPerRow);
     }
 
 
@@ -266,7 +263,7 @@ public class MainActivity extends AppCompatActivity  {
 
     /**
      * Allows users to pull an image up from the SD card. The image is received in onActivityResult()
-     * @param view
+     * @param view ADD A PHOTO Button
      */
     public void selectAnImage(View view) {
 
@@ -305,12 +302,15 @@ public class MainActivity extends AppCompatActivity  {
 
                     inputStream.close();
 
-                } catch (FileNotFoundException e) {
+                }
+                catch (FileNotFoundException e) {
                     Toast.makeText(this, "Unable to open image", Toast.LENGTH_LONG).show();
+                    Log.e("IO error: ","File not found");
                 } catch (IOException e){
                     Toast.makeText(this, "Unable to open image", Toast.LENGTH_LONG).show();
+                } catch (NullPointerException e) {
+                    Log.e("IO error: ", "Unable to close stream");
                 }
-
             }
             else if (requestCode == MAPS_LOCATION_REQUEST){
                 // Set returned data to editText fields
@@ -324,8 +324,8 @@ public class MainActivity extends AppCompatActivity  {
 
     /**
      * Scales bitmap down so greatest dimension is PHOTO_MAX_DIMENSION
-     * @param bitmap
-     * @return
+     * @param bitmap unscaled bitmap
+     * @return scaled bitmap
      */
     public static Bitmap scaleBitmap(Bitmap bitmap){
         // TODO prevent from scaling up
@@ -376,7 +376,7 @@ public class MainActivity extends AppCompatActivity  {
 
     /**
      * Increment offset and set photo if legal
-     * @param view
+     * @param view + Button
      */
     public void incrementOffset(View view){
         int width = mPhotoBitmap.getWidth();
@@ -393,7 +393,7 @@ public class MainActivity extends AppCompatActivity  {
 
     /**
      * Decrement offset and set photo if legal
-     * @param view
+     * @param view - Button
      */
     public void decrementOffset(View view){
         // If increment doesn't push the image window beyond bounds, then increment offset of crop

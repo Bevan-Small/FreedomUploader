@@ -39,6 +39,8 @@ public class SubmissionActivity extends AppCompatActivity {
     }
 
 
+    /////////////////////////////////// Retrieving data ////////////////////////////////////////////
+
     /**
      * Provides data from mSubmission to views
      */
