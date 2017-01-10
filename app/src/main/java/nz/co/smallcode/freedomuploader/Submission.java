@@ -29,19 +29,20 @@ public class Submission {
         // default constructor required for uploading to Firebase
     }
 
+
     /**
      * Sets all data fields except the photo Bitmap
-     * @param countryCode
-     * @param index
-     * @param title
-     * @param description
-     * @param address
-     * @param rating
-     * @param tag1
-     * @param tag2
-     * @param tag3
-     * @param longitude
-     * @param latitude
+     * @param countryCode 3 letter code e.g. NZL
+     * @param index database box
+     * @param title title
+     * @param description paragraph of description
+     * @param address google maps address
+     * @param rating out of 3
+     * @param tag1 searchable descriptor
+     * @param tag2 searchable descriptor
+     * @param tag3 searchable descriptor
+     * @param longitude double
+     * @param latitude double
      */
     public void setDatabaseData(String countryCode, long index, String title, String description,
                                 String address, long rating, String tag1, String tag2, String tag3,
@@ -67,10 +68,10 @@ public class Submission {
      * YYY.YYYYYY - latitude
      * ZZZ.ZZZZZZ - longitude
      * S - sign (either "-" or "0")
-     * @param countryCode
-     * @param longitude
-     * @param latitude
-     * @return
+     * @param countryCode 3 letter code e.g. NZL
+     * @param longitude double
+     * @param latitude double
+     * @return database key
      */
     private String generateId(String countryCode, double longitude, double latitude){
 
@@ -86,8 +87,8 @@ public class Submission {
     /**
      * Takes a coordinate and parses it into a String of shape SAAA.AAAAAA
      * Does NOT check if coordinates are too large, so "." may migrate right
-     * @param coordinate
-     * @return
+     * @param coordinate as a double
+     * @return parsed coordinate string
      */
     private String coordinateToParsedString(double coordinate){
         StringBuilder coordinateStringBuilder = new StringBuilder(Double.toString(coordinate));

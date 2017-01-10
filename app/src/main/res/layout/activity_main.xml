@@ -166,7 +166,7 @@
             android:id="@+id/buttonSubmit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="submitDataToDatabase"
+            android:onClick="reviewData"
             android:text="SUBMIT" />
 
         <TextView

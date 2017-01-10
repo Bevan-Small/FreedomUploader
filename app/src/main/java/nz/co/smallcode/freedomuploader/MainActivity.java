@@ -1,5 +1,6 @@
 package nz.co.smallcode.freedomuploader;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,8 +16,10 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -71,7 +74,7 @@ public class MainActivity extends AppCompatActivity  {
      * database if data looks good
      * @param view
      */
-    public void submitDataToDatabase(View view) {
+    public void reviewData(View view) {
 
         // Sets variables of mSubmission to their corresponding view values
         setSubmissionData();
@@ -86,10 +89,43 @@ public class MainActivity extends AppCompatActivity  {
         // makes submission to database
         if (dataGood){
             Toast.makeText(this,"Successful!",Toast.LENGTH_LONG).show();
-            // TODO submit data to data base
-            // TODO check data isn't in database already
+
+            Intent intent = new Intent(this, SubmissionActivity.class);
+            intent.putExtra("photoFilename",createImageFromBitmap(mSubmission.getPhoto()));
+            intent.putExtra("id",mSubmission.getId());
+            intent.putExtra("countryCode",mSubmission.getCountryCode());
+            intent.putExtra("index",mSubmission.getIndex());
+            intent.putExtra("title",mSubmission.getTitle());
+            intent.putExtra("description",mSubmission.getDescription());
+            intent.putExtra("address",mSubmission.getAddress());
+            intent.putExtra("rating",mSubmission.getRating());
+            intent.putExtra("tag1",mSubmission.getTag1());
+            intent.putExtra("tag2",mSubmission.getTag2());
+            intent.putExtra("tag3",mSubmission.getTag3());
+            intent.putExtra("longitude",mSubmission.getLongitude());
+            intent.putExtra("latitude",mSubmission.getLatitude());
+
+            startActivity(intent);
+
         }
     }
+
+
+    public String createImageFromBitmap(Bitmap bitmap) {
+        String fileName = "submissionPhoto";
+        try {
+            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, bytes);
+            FileOutputStream fo = openFileOutput(fileName, Context.MODE_PRIVATE);
+            fo.write(bytes.toByteArray());
+            fo.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+            fileName = null;
+        }
+        return fileName;
+    }
+
 
 
     /**
@@ -134,7 +170,7 @@ public class MainActivity extends AppCompatActivity  {
         Spinner tag3Spinner = (Spinner) findViewById(R.id.spinnerTag3);
         String tag3 = tag3Spinner.getSelectedItem().toString();
 
-        // Calculating the "box" the submission fits into
+        // Calculating the "box"  number the submission fits into
         long index = indexCalculator(latitude, longitude);
 
         // TODO make a country code table when another country is added
@@ -149,7 +185,7 @@ public class MainActivity extends AppCompatActivity  {
      * Checks all necessary fields are filled
      * Subs noAddress for address if field blank
      * Checks coordinates are in legal bounds
-     * @return
+     * @return true if data is good
      */
     public boolean checkData(){
         // TODO abstract this away to Submission class?
