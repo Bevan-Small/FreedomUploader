@@ -117,5 +117,6 @@
         android:layout_height="wrap_content"
         android:text="LOOKS GOOD FOR SUBMISSION"
         android:layout_alignParentBottom="true"
+        android:onClick="startChecksAndUpload"
         />
 </LinearLayout>

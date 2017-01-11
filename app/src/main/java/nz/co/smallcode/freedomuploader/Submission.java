@@ -4,6 +4,8 @@ import android.graphics.Bitmap;
 
 /**
  * Created by Bevan on 15-Dec-16.
+ * Used to store information about a submission in-app
+ * See DatabaseAdventure for object used to write to firebase database
  */
 
 public class Submission {

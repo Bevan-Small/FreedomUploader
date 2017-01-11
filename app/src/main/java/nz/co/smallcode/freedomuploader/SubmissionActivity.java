@@ -9,9 +9,15 @@ import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.IOException;
 
 public class SubmissionActivity extends AppCompatActivity {
+
+    private DatabaseReference mDatabaseRootReference = FirebaseDatabase.getInstance().getReference();
+    private DatabaseAdventure mDatabaseAdventure;
 
     private Submission mSubmission;
     private TextView mTitleView;
@@ -27,10 +33,15 @@ public class SubmissionActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_submission);
 
+        // Initialise database and set persistence
+        // FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+
+
         // Set data
         Intent extras = getIntent();
         mSubmission = new Submission();
         setSubmissionData(extras);
+        mDatabaseAdventure = new DatabaseAdventure(mSubmission);
 
         // Display data
         findViews();
@@ -39,7 +50,38 @@ public class SubmissionActivity extends AppCompatActivity {
     }
 
 
-    /////////////////////////////////// Retrieving data ////////////////////////////////////////////
+    /////////////////////////////////// Uploading and checks ///////////////////////////////////////
+
+    private void startChecksAndUpload(){
+        checkIdClash();
+        checkNearbyActivities();
+        try {
+            uploadSubmission();
+        } catch (Exception e){
+            Log.e("Failed"," dont know why");
+        }
+    }
+
+    private void checkIdClash(){
+        // TODO inspect node at index for keys matching mSubmission id
+    }
+
+    private void checkNearbyActivities(){
+        // TODO display nearby activities to avoid doubleups
+    }
+
+    private void uploadSubmission(){
+        String box = String.valueOf(mSubmission.getIndex());
+        String id = mSubmission.getId();
+
+        // mDatabaseReference.child(box).child(key).setValue(mDatabaseAdventure);
+        // mDatabaseReference.push().setValue(mDatabaseAdventure);
+        DatabaseReference boxReference = mDatabaseRootReference.child(box);
+        DatabaseReference idReference = boxReference.child(id);
+        boxReference.setValue(mDatabaseAdventure);
+    }
+
+    /////////////////////////////////// Retrieving and displaying data /////////////////////////////
 
     /**
      * Provides data from mSubmission to views
