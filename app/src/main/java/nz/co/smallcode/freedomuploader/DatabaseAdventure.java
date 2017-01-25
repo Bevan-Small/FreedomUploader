@@ -8,16 +8,16 @@ package nz.co.smallcode.freedomuploader;
 public class DatabaseAdventure {
 
 
-    public String title;
-    public String description;
-    public String address;
-    public double rating;
-    public String tag1;
-    public String tag2;
-    public String tag3;
-    public double longitude;
-    public double latitude;
-    public String countryCode;
+    private String title;
+    private String description;
+    private String address;
+    private double rating;
+    private String tag1;
+    private String tag2;
+    private String tag3;
+    private double longitude;
+    private double latitude;
+    private String countryCode;
 
     public DatabaseAdventure(){
         // Default constructor used by firebase

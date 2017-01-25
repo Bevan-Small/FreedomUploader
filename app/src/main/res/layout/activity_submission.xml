@@ -112,11 +112,11 @@
     </ScrollView>
 
     <Button
+        android:id="@+id/buttonSubmissionUpload"
         android:layout_weight="0"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="LOOKS GOOD FOR SUBMISSION"
         android:layout_alignParentBottom="true"
-        android:onClick="startChecksAndUpload"
         />
 </LinearLayout>

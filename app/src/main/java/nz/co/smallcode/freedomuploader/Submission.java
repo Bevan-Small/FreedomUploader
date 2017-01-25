@@ -65,11 +65,13 @@ public class Submission {
     }
 
     /**
-     * Creates the id of the submission in format CCCSYYY.YYYYYYSZZZ.ZZZZZZ
+     * Creates the id of the submission in format CCCSAAABBBBBBSYYYZZZZZZ
      * XXX - country code
-     * YYY.YYYYYY - latitude
-     * ZZZ.ZZZZZZ - longitude
-     * S - sign (either "-" or "0")
+     * AAA - latitude integer part
+     * BBBBBB - latitude fractional part
+     * YYY - longitude integer part
+     * ZZZZZZ - longitude fractional part
+     * S - sign (either "-" or "+")
      * @param countryCode 3 letter code e.g. NZL
      * @param longitude double
      * @param latitude double
@@ -87,7 +89,7 @@ public class Submission {
 
 
     /**
-     * Takes a coordinate and parses it into a String of shape SAAA.AAAAAA
+     * Takes a coordinate and parses it into a String of shape SAAADDDDDD
      * Does NOT check if coordinates are too large, so "." may migrate right
      * @param coordinate as a double
      * @return parsed coordinate string
@@ -125,6 +127,9 @@ public class Submission {
         while (coordinateStringBuilder.length() < ID_COORDINATE_LENGTH) {
             coordinateStringBuilder.append("0");
         }
+
+        // Remove "." character
+        coordinateStringBuilder.deleteCharAt(4);
 
         return coordinateStringBuilder.toString();
     }
